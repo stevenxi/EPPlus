@@ -7,11 +7,11 @@
     <Version>4.5.0.1-beta</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseUrl>https://www.gnu.org/licenses/lgpl-3.0.en.html</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/JanKallman/EPPlus</PackageProjectUrl>
-    <Authors>Jan Källman</Authors>
-    <Company></Company>
-    <Product>EPPlus</Product>
-    <Description>Create advanced Excel spreadsheets using .Net</Description>
+    <PackageProjectUrl>https://github.com/stevenxi/EPPlus</PackageProjectUrl>
+    <Authors>Jan Källman / S Xi</Authors>
+    <Company>Jan Källman / UDI</Company>
+    <Product>EPPlus-UDI-Fork</Product>
+    <Description>Create advanced Excel spreadsheets using .Net, Forked from https://github.com/JanKallman/EPPlus</Description>
     <AssemblyName>EPPlus</AssemblyName>
     <RootNamespace>EPPlus</RootNamespace>
     <RepositoryUrl></RepositoryUrl>
@@ -162,6 +162,7 @@ Release Candidate changes
 </PackageReleaseNotes>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OpenOfficeXml.snk</AssemblyOriginatorKeyFile>
+    <PackageId>EPPlus-UDI-Fork</PackageId>
   </PropertyGroup>
  
   <!--<PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0'">
