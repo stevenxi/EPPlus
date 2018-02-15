@@ -19,7 +19,7 @@ namespace EPPlusTest
     [TestClass]
     public class DrawingTest : TestBase
     {
-        [TestMethod]
+        [TestMethod][Ignore]
         public void RunDrawingTests()
         {
             BarChart();

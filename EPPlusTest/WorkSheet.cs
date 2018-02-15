@@ -2244,7 +2244,7 @@ namespace EPPlusTest
 
             pck.Save();
         }
-        //[Ignore]
+        [Ignore]
         [TestMethod]
         public void SetBackground()
         {
