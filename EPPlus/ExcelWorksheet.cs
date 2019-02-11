@@ -1126,7 +1126,7 @@ namespace OfficeOpenXml
 
                         ExcelColumn col = new ExcelColumn(this, min);
 
-                        col.ColumnMax = int.Parse(xr.GetAttribute("max"));
+                        col._columnMax = int.Parse(xr.GetAttribute("max"));
                         col.Width = xr.GetAttribute("width") == null ? 0 : double.Parse(xr.GetAttribute("width"), CultureInfo.InvariantCulture);
                         col.BestFit = xr.GetAttribute("bestFit") != null && xr.GetAttribute("bestFit") == "1" ? true : false;
                         col.Collapsed = xr.GetAttribute("collapsed") != null && xr.GetAttribute("collapsed") == "1" ? true : false;
