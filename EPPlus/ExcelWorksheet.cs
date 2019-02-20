@@ -89,7 +89,18 @@ namespace OfficeOpenXml
     /// </summary>
     public struct ExcelCoreValue
     {
-        internal object _value;
+        private object _v;
+        internal object _value
+        {
+            get { return _v; }
+            set {
+                _v = value;
+                if (value is double && double.IsNaN((double)value))
+                {
+
+                }
+            }
+        }
         internal int _styleId;
 
     }
@@ -1543,7 +1554,15 @@ namespace OfficeOpenXml
                     }
                     else
                     {
-                        SetValueInner(row, col, double.NaN);
+                        DateTime date;
+                        if (type == "d" && DateTime.TryParse(v, null, DateTimeStyles.RoundtripKind, out date))
+                        {
+                            SetValueInner(row, col, date);
+                        }
+                        else
+                        {
+                            SetValueInner(row, col, double.NaN);
+                        }
                     }
                 }
             }
