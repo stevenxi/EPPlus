@@ -502,13 +502,25 @@ namespace OfficeOpenXml
                 }
 
                 if (FromColumn <= 0)
+                {
                     FromColumn = 1;
+                    fixedFromColumn = true;
+                }
                 if (FromRow <= 0)
+                {
                     FromRow = 1;
+                    fixedFromRow = true;
+                }
                 if (ToColumn <= 0)
+                {
                     ToColumn = ExcelPackage.MaxColumns;
+                    fixedToColumn = true;
+                }
                 if (ToRow <= 0)
+                {
                     ToRow = ExcelPackage.MaxRows;
+                    fixedToRow = true;
+                }
             }
             return ret;
         }
