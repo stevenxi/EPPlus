@@ -332,7 +332,11 @@ namespace OfficeOpenXml
             if(_ws.StartsWith("'"))
             {
                 pos = _ws.IndexOf("'",1);
-                if(pos>0)
+
+                while (pos < _ws.Length - 2 && _ws[pos + 1] == '\'')
+                    pos = _ws.IndexOf("'", pos + 2);
+
+                if (pos>0)
                 {
                     _address = _ws.Substring(pos+2);
                     _ws = _ws.Substring(1, pos-1);

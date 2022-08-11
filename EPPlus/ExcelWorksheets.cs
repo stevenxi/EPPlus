@@ -1054,10 +1054,13 @@ namespace OfficeOpenXml
         private ExcelWorksheet GetByName(string Name)
         {
             if (string.IsNullOrEmpty(Name)) return null;
+
+            var escapedName = Name.Replace("''", "'");
+
             ExcelWorksheet xlWorksheet = null;
             foreach (ExcelWorksheet worksheet in _worksheets.Values)
             {
-                if (worksheet.Name.Equals(Name, StringComparison.OrdinalIgnoreCase))
+                if (worksheet.Name.Equals(escapedName, StringComparison.OrdinalIgnoreCase))
                     xlWorksheet = worksheet;
             }
             return (xlWorksheet);
