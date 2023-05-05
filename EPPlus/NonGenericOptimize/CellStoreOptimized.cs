@@ -171,7 +171,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                 return _valuesGeneric[i.Index];
             }
 
-            return default;
+            return default(ExcelCoreValue);
         }
 
         ComposePosition GetPointer(int Row, int Column)
@@ -417,7 +417,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                                     switch (pointer.Type)
                                     {
                                         case ComposePositionType.Double:
-                                            if (updatedVal.Value._value is double m && updatedVal.Value._styleId == default)
+                                            if (updatedVal.Value._value is double m && updatedVal.Value._styleId == 0)
                                             {
                                                 _valuesDouble[pointer.Index] = m;
                                             }
@@ -428,7 +428,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                                             }
                                             break;
                                         case ComposePositionType.Decimal:
-                                            if (updatedVal.Value._value is decimal d && updatedVal.Value._styleId == default)
+                                            if (updatedVal.Value._value is decimal d && updatedVal.Value._styleId == 0)
                                             {
                                                 _valuesDecimal[pointer.Index] = d;
                                             }
@@ -474,7 +474,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                                     switch (pointer.Type)
                                     {
                                         case ComposePositionType.Double:
-                                            if (updatedVal.Value._value is double m && updatedVal.Value._styleId == default)
+                                            if (updatedVal.Value._value is double m && updatedVal.Value._styleId == 0)
                                             {
                                                 _valuesDouble[pointer.Index] = m;
                                             }
@@ -485,7 +485,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                                             }
                                             break;
                                         case ComposePositionType.Decimal:
-                                            if (updatedVal.Value._value is decimal d && updatedVal.Value._styleId == default)
+                                            if (updatedVal.Value._value is decimal d && updatedVal.Value._styleId == 0)
                                             {
                                                 _valuesDecimal[pointer.Index] = d;
                                             }
@@ -604,7 +604,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                         switch (pointer.Type)
                         {
                             case ComposePositionType.Double:
-                                if (updatedVal.Value._value is double m && updatedVal.Value._styleId == default)
+                                if (updatedVal.Value._value is double m && updatedVal.Value._styleId == 0)
                                 {
                                     _valuesDouble[pointer.Index] = m;
                                 }
@@ -615,7 +615,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                                 }
                                 break;
                             case ComposePositionType.Decimal:
-                                if (updatedVal.Value._value is decimal d && updatedVal.Value._styleId == default)
+                                if (updatedVal.Value._value is decimal d && updatedVal.Value._styleId == 0)
                                 {
                                     _valuesDecimal[pointer.Index] = d;
                                 }
@@ -660,7 +660,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                         switch (pointer.Type)
                         {
                             case ComposePositionType.Double:
-                                if (updatedVal.Value._value is double m && updatedVal.Value._styleId == default)
+                                if (updatedVal.Value._value is double m && updatedVal.Value._styleId == 0)
                                 {
                                     _valuesDouble[pointer.Index] = m;
                                 }
@@ -671,7 +671,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                                 }
                                 break;
                             case ComposePositionType.Decimal:
-                                if (updatedVal.Value._value is decimal d && updatedVal.Value._styleId == default)
+                                if (updatedVal.Value._value is decimal d && updatedVal.Value._styleId == 0)
                                 {
                                     _valuesDecimal[pointer.Index] = d;
                                 }
@@ -1296,12 +1296,12 @@ namespace OfficeOpenXml.NonGenericOptimize
                 Array.Copy(pageItem.Rows, pos, pageItem.Rows, pos + 1, pageItem.RowCount - pos);
             }
 
-            if (value._value is double m && value._styleId == default)
+            if (value._value is double m && value._styleId == 0)
             {
                 pageItem.Rows[pos] = new IndexItem { Index = ix, IndexPointer = new ComposePosition { Index = _valuesDouble.Count, Type = ComposePositionType.Double } };
                 _valuesDouble.Add(m);
             }
-            else if (value._value is decimal d && value._styleId == default)
+            else if (value._value is decimal d && value._styleId == 0)
             {
                 pageItem.Rows[pos] = new IndexItem { Index = ix, IndexPointer = new ComposePosition { Index = _valuesDecimal.Count, Type = ComposePositionType.Decimal } };
                 _valuesDecimal.Add(d);
