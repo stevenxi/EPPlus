@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OfficeOpenXml;
+using OfficeOpenXml.NonGenericOptimize;
 
 namespace EPPlusTest
 {
@@ -87,7 +88,7 @@ namespace EPPlusTest
 
             LoadData(ws, 5000);
 
-            var o = new CellsStoreEnumerator<ExcelCoreValue>(ws._values, 2, 1, 5, 3);
+            var o = new CellsStoreEnumeratorOptimized(ws._values, 2, 1, 5, 3);
             foreach (var i in o)
             {
                 Console.WriteLine(i);
