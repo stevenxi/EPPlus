@@ -1446,7 +1446,7 @@ internal class IndexBase : IComparable<IndexBase>
                 Array.Copy(pageItem.Rows, pos, pageItem.Rows, pos + 1, pageItem.RowCount - pos);
             }
 
-            pageItem.Rows[pos] = new IndexItem() { Index = ix, IndexPointer = new ComposePosition { Index = _values.Count, Type = ComposePositionType.Generic } };
+            pageItem.Rows[pos] = new IndexItem() { Index = ix, IndexPointer = new ComposePosition { Index = _values.Count } };
             _values.Add(value);
             pageItem.RowCount++;
         }

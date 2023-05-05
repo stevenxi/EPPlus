@@ -7,8 +7,10 @@ namespace OfficeOpenXml.NonGenericOptimize
 {
     enum ComposePositionType : byte
     {
-        Generic = 0,
-        Decimal = 1,
-        Double = 2,
+        Unknown = 0,
+        Generic = 1,
+        Decimal = 2,
+        Double = 3,
+        Int = 4,
     }
 }

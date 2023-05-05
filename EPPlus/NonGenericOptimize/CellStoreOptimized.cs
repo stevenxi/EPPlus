@@ -16,6 +16,7 @@ namespace OfficeOpenXml.NonGenericOptimize
         private List<ExcelCoreValue> _valuesGeneric = new List<ExcelCoreValue>();
         private List<double> _valuesDouble = new List<double>();
         private List<decimal> _valuesDecimal = new List<decimal>();
+        private List<int> _valuesInt = new List<int>();
 
         internal ColumnIndex[] _columnIndex;
         internal IndexBase _searchIx = new IndexBase();
@@ -43,6 +44,12 @@ namespace OfficeOpenXml.NonGenericOptimize
             {
                 _valuesDecimal.Clear();
                 _valuesDecimal = null;
+            }
+
+            if (_valuesInt != null)
+            {
+                _valuesInt.Clear();
+                _valuesInt = null;
             }
             _columnIndex = null;
         }
@@ -162,6 +169,8 @@ namespace OfficeOpenXml.NonGenericOptimize
             {
                 switch(i.Type)
                 {
+                    case ComposePositionType.Int:
+                        return new ExcelCoreValue { _value = _valuesInt[i.Index] };
                     case ComposePositionType.Double:
                         return new ExcelCoreValue { _value = _valuesDouble[i.Index] };
                     case ComposePositionType.Decimal:
@@ -262,6 +271,17 @@ namespace OfficeOpenXml.NonGenericOptimize
                         var pointer = pageItem.Rows[cellPos].IndexPointer;
                         switch (pointer.Type)
                         {
+                            case ComposePositionType.Int:
+                                if (Value._value is int i)
+                                {
+                                    _valuesInt[pointer.Index] = i;
+                                }
+                                else
+                                {
+                                    pageItem.Rows[cellPos].IndexPointer = new ComposePosition { Index = _valuesGeneric.Count, Type = ComposePositionType.Generic };
+                                    _valuesGeneric.Add(Value);
+                                }
+                                break;
                             case ComposePositionType.Double:
                                 if (Value._value is double m)
                                 {
@@ -381,6 +401,9 @@ namespace OfficeOpenXml.NonGenericOptimize
                                     ExcelCoreValue currentVal;
                                     switch (pointer.Type)
                                     {
+                                        case ComposePositionType.Int:
+                                            currentVal = new ExcelCoreValue { _value = _valuesInt[pointer.Index] };
+                                            break;
                                         case ComposePositionType.Double:
                                             currentVal = new ExcelCoreValue { _value = _valuesDouble[pointer.Index] };
                                             break;
@@ -399,6 +422,9 @@ namespace OfficeOpenXml.NonGenericOptimize
                                     ExcelCoreValue currentVal;
                                     switch (pointer.Type)
                                     {
+                                        case ComposePositionType.Int:
+                                            currentVal = new ExcelCoreValue { _value = _valuesInt[pointer.Index] };
+                                            break;
                                         case ComposePositionType.Double:
                                             currentVal = new ExcelCoreValue { _value = _valuesDouble[pointer.Index] };
                                             break;
@@ -416,6 +442,17 @@ namespace OfficeOpenXml.NonGenericOptimize
                                 {
                                     switch (pointer.Type)
                                     {
+                                        case ComposePositionType.Int:
+                                            if (updatedVal.Value._value is int i && updatedVal.Value._styleId == 0)
+                                            {
+                                                _valuesDouble[pointer.Index] = i;
+                                            }
+                                            else
+                                            {
+                                                pageItem.Rows[cellPos].IndexPointer = new ComposePosition { Index = _valuesGeneric.Count, Type = ComposePositionType.Generic };
+                                                _valuesGeneric.Add(updatedVal.Value);
+                                            }
+                                            break;
                                         case ComposePositionType.Double:
                                             if (updatedVal.Value._value is double m && updatedVal.Value._styleId == 0)
                                             {
@@ -456,6 +493,9 @@ namespace OfficeOpenXml.NonGenericOptimize
                                 ExcelCoreValue currentVal;
                                 switch (pointer.Type)
                                 {
+                                    case ComposePositionType.Int:
+                                        currentVal = new ExcelCoreValue { _value = _valuesInt[pointer.Index] };
+                                        break;
                                     case ComposePositionType.Double:
                                         currentVal = new ExcelCoreValue { _value = _valuesDouble[pointer.Index] };
                                         break;
@@ -473,6 +513,17 @@ namespace OfficeOpenXml.NonGenericOptimize
                                 {
                                     switch (pointer.Type)
                                     {
+                                        case ComposePositionType.Int:
+                                            if (updatedVal.Value._value is int i && updatedVal.Value._styleId == 0)
+                                            {
+                                                _valuesDouble[pointer.Index] = i;
+                                            }
+                                            else
+                                            {
+                                                _columnIndex[col]._pages[0].Rows[0].IndexPointer = new ComposePosition { Index = _valuesGeneric.Count, Type = ComposePositionType.Generic };
+                                                _valuesGeneric.Add(updatedVal.Value);
+                                            }
+                                            break;
                                         case ComposePositionType.Double:
                                             if (updatedVal.Value._value is double m && updatedVal.Value._styleId == 0)
                                             {
@@ -559,7 +610,7 @@ namespace OfficeOpenXml.NonGenericOptimize
                     if (cellPos < 0)
                     {
                         cellPos = ~cellPos;
-                        AddCell(_columnIndex[col], pos, cellPos, ix, new ExcelCoreValue {  _value = Value});
+                        AddCell(_columnIndex[col], pos, cellPos, ix, default(ExcelCoreValue));
 
                         pointer = pageItem.Rows[cellPos].IndexPointer;
 
@@ -567,6 +618,9 @@ namespace OfficeOpenXml.NonGenericOptimize
                         ExcelCoreValue currentVal;
                         switch (pointer.Type)
                         {
+                            case ComposePositionType.Int:
+                                currentVal = new ExcelCoreValue { _value = _valuesInt[pointer.Index] };
+                                break;
                             case ComposePositionType.Double:
                                 currentVal = new ExcelCoreValue { _value = _valuesDouble[pointer.Index] };
                                 break;
@@ -586,6 +640,9 @@ namespace OfficeOpenXml.NonGenericOptimize
                         ExcelCoreValue currentVal;
                         switch (pointer.Type)
                         {
+                            case ComposePositionType.Int:
+                                currentVal = new ExcelCoreValue { _value = _valuesInt[pointer.Index] };
+                                break;
                             case ComposePositionType.Double:
                                 currentVal = new ExcelCoreValue { _value = _valuesDouble[pointer.Index] };
                                 break;
@@ -603,6 +660,17 @@ namespace OfficeOpenXml.NonGenericOptimize
                     {
                         switch (pointer.Type)
                         {
+                            case ComposePositionType.Int:
+                                if (updatedVal.Value._value is int i && updatedVal.Value._styleId == 0)
+                                {
+                                    _valuesDouble[pointer.Index] = i;
+                                }
+                                else
+                                {
+                                    pageItem.Rows[cellPos].IndexPointer = new ComposePosition { Index = _valuesGeneric.Count, Type = ComposePositionType.Generic };
+                                    _valuesGeneric.Add(updatedVal.Value);
+                                }
+                                break;
                             case ComposePositionType.Double:
                                 if (updatedVal.Value._value is double m && updatedVal.Value._styleId == 0)
                                 {
@@ -637,12 +705,15 @@ namespace OfficeOpenXml.NonGenericOptimize
                     AddColumn(col, Column);
                     AddPage(_columnIndex[col], 0, page);
                     short ix = (short)(Row - (page << pageBits));
-                    AddCell(_columnIndex[col], 0, 0, ix, new ExcelCoreValue { _value = Value });
+                    AddCell(_columnIndex[col], 0, 0, ix, default(ExcelCoreValue));
                     var pointer = _columnIndex[col]._pages[0].Rows[0].IndexPointer;
 
                     ExcelCoreValue currentVal;
                     switch (pointer.Type)
                     {
+                        case ComposePositionType.Int:
+                            currentVal = new ExcelCoreValue { _value = _valuesInt[pointer.Index] };
+                            break;
                         case ComposePositionType.Double:
                             currentVal = new ExcelCoreValue { _value = _valuesDouble[pointer.Index] };
                             break;
@@ -659,6 +730,17 @@ namespace OfficeOpenXml.NonGenericOptimize
                     {
                         switch (pointer.Type)
                         {
+                            case ComposePositionType.Int:
+                                if (updatedVal.Value._value is int i && updatedVal.Value._styleId == 0)
+                                {
+                                    _valuesDouble[pointer.Index] = i;
+                                }
+                                else
+                                {
+                                    _columnIndex[col]._pages[0].Rows[0].IndexPointer = new ComposePosition { Index = _valuesGeneric.Count, Type = ComposePositionType.Generic };
+                                    _valuesGeneric.Add(updatedVal.Value);
+                                }
+                                break;
                             case ComposePositionType.Double:
                                 if (updatedVal.Value._value is double m && updatedVal.Value._styleId == 0)
                                 {
@@ -1296,7 +1378,12 @@ namespace OfficeOpenXml.NonGenericOptimize
                 Array.Copy(pageItem.Rows, pos, pageItem.Rows, pos + 1, pageItem.RowCount - pos);
             }
 
-            if (value._value is double m && value._styleId == 0)
+            if (value._value is int i && value._styleId == 0)
+            {
+                pageItem.Rows[pos] = new IndexItem { Index = ix, IndexPointer = new ComposePosition { Index = _valuesInt.Count, Type = ComposePositionType.Int } };
+                _valuesInt.Add(i);
+            }
+            else if (value._value is double m && value._styleId == 0)
             {
                 pageItem.Rows[pos] = new IndexItem { Index = ix, IndexPointer = new ComposePosition { Index = _valuesDouble.Count, Type = ComposePositionType.Double } };
                 _valuesDouble.Add(m);
@@ -1462,7 +1549,10 @@ namespace OfficeOpenXml.NonGenericOptimize
 
             if (_valuesDecimal != null)
                 _valuesDecimal.Clear();
-            
+
+            if (_valuesInt != null)
+                _valuesInt.Clear();
+
             for (var c = 0; c < ColumnCount; c++)
             {
                 if (_columnIndex[c] != null)
@@ -1474,6 +1564,7 @@ namespace OfficeOpenXml.NonGenericOptimize
             _valuesGeneric = null;
             _valuesDouble = null;
             _valuesDecimal = null;
+            _valuesInt = null;
 
             _columnIndex = null;
         }
