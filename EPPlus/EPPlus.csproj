@@ -95,7 +95,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NonGenericOptimize\CellsStoreEnumeratorOptimized.cs" />
     <Compile Include="CellStore.cs" />
+    <Compile Include="NonGenericOptimize\CellStoreOptimized.cs" />
     <Compile Include="Compatibility\CompatibilitySettings.cs" />
     <Compile Include="Compatibility\TypeCompat.cs" />
     <Compile Include="ConditionalFormatting\Contracts\IExcelConditionalFormattingAverageGroup.cs" />
@@ -629,6 +631,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FormulaParsing\Utilities\Require.cs" />
+    <Compile Include="NonGenericOptimize\ComposePosition.cs" />
+    <Compile Include="NonGenericOptimize\ComposePositionType.cs" />
     <Compile Include="Packaging\DotNetZip\ComHelper.cs" />
     <Compile Include="Packaging\DotNetZip\CRC32.cs">
       <SubType>Code</SubType>

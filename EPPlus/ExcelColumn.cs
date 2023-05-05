@@ -31,6 +31,7 @@
  *******************************************************************************/
 using System;
 using System.Xml;
+using OfficeOpenXml.NonGenericOptimize;
 using OfficeOpenXml.Style;
 namespace OfficeOpenXml
 {
@@ -81,7 +82,7 @@ namespace OfficeOpenXml
                     throw new Exception("ColumnMax out of range");
                 }
 
-                var cse = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, 0, 0, 0, ExcelPackage.MaxColumns);
+                var cse = new CellsStoreEnumeratorOptimized(_worksheet._values, 0, 0, 0, ExcelPackage.MaxColumns);
                 while(cse.Next())
                 {
                     var c = cse.Value._value as ExcelColumn;

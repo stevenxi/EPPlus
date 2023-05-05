@@ -37,6 +37,7 @@ using System.Text;
 using System.Xml;
 using OfficeOpenXml.Drawing.Chart;
 using System.Drawing;
+using OfficeOpenXml.NonGenericOptimize;
 using OfficeOpenXml.Style.XmlAccess;
 
 namespace OfficeOpenXml.Drawing
@@ -531,7 +532,7 @@ namespace OfficeOpenXml.Drawing
             {
                 var height = dh;
 
-                var cse = new CellsStoreEnumerator<ExcelCoreValue>(_drawings.Worksheet._values, row, 0, row, ExcelPackage.MaxColumns);
+                var cse = new CellsStoreEnumeratorOptimized(_drawings.Worksheet._values, row, 0, row, ExcelPackage.MaxColumns);
                 var styles = _drawings.Worksheet.Workbook.Styles;
                 while (cse.Next())
                 {

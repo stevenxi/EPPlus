@@ -43,6 +43,7 @@ using OfficeOpenXml.Drawing;
 using OfficeOpenXml.Drawing.Chart;
 using OfficeOpenXml.Style.XmlAccess;
 using OfficeOpenXml.Drawing.Vml;
+using OfficeOpenXml.NonGenericOptimize;
 using OfficeOpenXml.Packaging.Ionic.Zlib;
 using OfficeOpenXml.Utils;
 using OfficeOpenXml.VBA;
@@ -523,7 +524,7 @@ namespace OfficeOpenXml
             Dictionary<int, int> styleCashe = new Dictionary<int, int>();
             //Cells
             int row,col;
-            var val = new CellsStoreEnumerator<ExcelCoreValue>(Copy._values);
+            var val = new CellsStoreEnumeratorOptimized(Copy._values);
             while(val.Next())
             {                
                 row = val.Row;

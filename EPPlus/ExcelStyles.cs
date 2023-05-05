@@ -39,6 +39,8 @@ using OfficeOpenXml.Style;
 using OfficeOpenXml.Style.XmlAccess;
 using OfficeOpenXml.Style.Dxf;
 using OfficeOpenXml.ConditionalFormatting;
+using OfficeOpenXml.NonGenericOptimize;
+
 namespace OfficeOpenXml
 {
 	/// <summary>
@@ -283,7 +285,7 @@ namespace OfficeOpenXml
                 }
 
                 //Set for individual cells in the span. We loop all cells here since the cells are sorted with columns first.
-                var cse = new CellsStoreEnumerator<ExcelCoreValue>(ws._values, 1, address._fromCol, address._toRow, address._toCol);
+                var cse = new CellsStoreEnumeratorOptimized(ws._values, 1, address._fromCol, address._toRow, address._toCol);
                 while (cse.Next())
                 {
                     if (cse.Column >= address.Start.Column &&
@@ -307,7 +309,7 @@ namespace OfficeOpenXml
                 if (!(address._fromCol == 1 && address._toCol == ExcelPackage.MaxColumns))
                 {
                     //Update cells with styled columns
-                    cse = new CellsStoreEnumerator<ExcelCoreValue>(ws._values, 1, 0, address._toRow, 0);
+                    cse = new CellsStoreEnumeratorOptimized(ws._values, 1, 0, address._toRow, 0);
                     while (cse.Next())
                     {
                         if (cse.Value._styleId == 0) continue;
@@ -341,7 +343,7 @@ namespace OfficeOpenXml
                     if (s == 0)
                     {
                         //iterate all columns and set the row to the style of the last column
-                        var cse = new CellsStoreEnumerator<ExcelCoreValue>(ws._values, 0, 1, 0, ExcelPackage.MaxColumns);
+                        var cse = new CellsStoreEnumeratorOptimized(ws._values, 0, 1, 0, ExcelPackage.MaxColumns);
                         while (cse.Next())
                         {
                             s = cse.Value._styleId;
@@ -375,7 +377,7 @@ namespace OfficeOpenXml
                 }
 
                 //Update individual cells 
-                var cse2 = new CellsStoreEnumerator<ExcelCoreValue>(ws._values, address._fromRow, address._fromCol, address._toRow, address._toCol);
+                var cse2 = new CellsStoreEnumeratorOptimized(ws._values, address._fromRow, address._fromCol, address._toRow, address._toCol);
                 while (cse2.Next())
                 {
                     var s = cse2.Value._styleId;
@@ -394,7 +396,7 @@ namespace OfficeOpenXml
                 }
 
                 //Update cells with styled rows
-                cse2 = new CellsStoreEnumerator<ExcelCoreValue>(ws._values, 0, 1, 0, address._toCol);
+                cse2 = new CellsStoreEnumeratorOptimized(ws._values, 0, 1, 0, address._toCol);
                 while (cse2.Next())
                 {
                     if (cse2.Value._styleId == 0) continue;
@@ -424,10 +426,10 @@ namespace OfficeOpenXml
                 var rowCache = new Dictionary<int, int>(address.End.Row - address.Start.Row + 1);
                 var colCache = new Dictionary<int, ExcelCoreValue>(address.End.Column - address.Start.Column + 1);
                 ws._values.SetRangeValueSpecial(address.Start.Row, address.Start.Column, address.End.Row, address.End.Column,
-                    (List<ExcelCoreValue> list, int index, int row, int column, object args) =>
+                    (int row, int column, object args, ExcelCoreValue oldVal) =>
                     {
                         // Optimized GetStyleID
-                        var s = list[index]._styleId;
+                        var s = oldVal._styleId;
                         if (s == 0 && !ws.ExistsStyleInner(row, 0, ref s))
                         {
                             // get row styleId with cache
@@ -459,7 +461,7 @@ namespace OfficeOpenXml
                         if (tmpCache.ContainsKey(s))
                         {
                             //ws.SetStyleInner(row, column, tmpCache[s]);
-                            list[index] = new ExcelCoreValue { _value = list[index]._value, _styleId = tmpCache[s] };
+                            return new ExcelCoreValue { _value = oldVal._value, _styleId = tmpCache[s] };
                         }
                         else
                         {
@@ -467,7 +469,7 @@ namespace OfficeOpenXml
                             int newId = st.GetNewID(CellXfs, sender, e.StyleClass, e.StyleProperty, e.Value);
                             tmpCache.Add(s, newId);
                             //ws.SetStyleInner(row, column, newId);
-                            list[index] = new ExcelCoreValue { _value = list[index]._value, _styleId = newId };
+                            return new ExcelCoreValue { _value = oldVal._value, _styleId = newId };
                         }
                     },
                     e);
@@ -840,7 +842,7 @@ namespace OfficeOpenXml
             CellXfs[0].useCnt = 1; //First item is allways used.
             foreach (ExcelWorksheet sheet in _wb.Worksheets)
             {
-                var cse = new CellsStoreEnumerator<ExcelCoreValue>(sheet._values);
+                var cse = new CellsStoreEnumeratorOptimized(sheet._values);
                 while(cse.Next())
                 {
                     var v = cse.Value._styleId;

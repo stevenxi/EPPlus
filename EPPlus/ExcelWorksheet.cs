@@ -54,6 +54,7 @@ using OfficeOpenXml.Utils;
 
 using System.Linq;
 using OfficeOpenXml.Compatibility;
+using OfficeOpenXml.NonGenericOptimize;
 using OfficeOpenXml.Sparkline;
 
 namespace OfficeOpenXml
@@ -361,7 +362,7 @@ namespace OfficeOpenXml
         //internal CellStore<object> _values;
         //internal CellStore<string> _types;
         //internal CellStore<int> _styles;
-        internal CellStore<ExcelCoreValue> _values;
+        internal CellStoreOptimized _values;
         internal CellStore<object> _formulas;
         internal FlagCellStore _flags;
         internal CellStore<List<Token>> _formulaTokens;
@@ -410,7 +411,7 @@ namespace OfficeOpenXml
             Hidden = hide;
 
             /**** Cellstore ****/
-            _values = new CellStore<ExcelCoreValue>();
+            _values = new CellStoreOptimized();
             //_types = new CellStore<string>();
             //_styles = new CellStore<int>();
             _formulas = new CellStore<object>();
@@ -1941,7 +1942,7 @@ namespace OfficeOpenXml
                 FixMergedCellsRow(rowFrom, rows, false);
                 if (copyStylesFromRow > 0)
                 {
-                    var cseS = new CellsStoreEnumerator<ExcelCoreValue>(_values, copyStylesFromRow, 0, copyStylesFromRow, ExcelPackage.MaxColumns); //Fixes issue 15068 , 15090
+                    var cseS = new CellsStoreEnumeratorOptimized(_values, copyStylesFromRow, 0, copyStylesFromRow, ExcelPackage.MaxColumns); //Fixes issue 15068 , 15090
                     while (cseS.Next())
                     {
                         if (cseS.Value._styleId == 0) continue;
@@ -2057,7 +2058,7 @@ namespace OfficeOpenXml
 
                 FixMergedCellsColumn(columnFrom, columns, false);
 
-                var csec = new CellsStoreEnumerator<ExcelCoreValue>(_values, 0, 1, 0, ExcelPackage.MaxColumns);
+                var csec = new CellsStoreEnumeratorOptimized(_values, 0, 1, 0, ExcelPackage.MaxColumns);
                 var lst = new List<ExcelColumn>();
                 foreach (var val in csec)
                 {
@@ -2110,7 +2111,7 @@ namespace OfficeOpenXml
 
                     //Get styles to a cached list, 
                     var l = new List<int[]>();
-                    var sce = new CellsStoreEnumerator<ExcelCoreValue>(_values, 0, copyStylesFromColumn, ExcelPackage.MaxRows, copyStylesFromColumn);
+                    var sce = new CellsStoreEnumeratorOptimized(_values, 0, copyStylesFromColumn, ExcelPackage.MaxRows, copyStylesFromColumn);
                     lock (sce)
                     {
                         while (sce.Next())
@@ -2635,7 +2636,7 @@ namespace OfficeOpenXml
                 AdjustFormulasColumn(columnFrom, columns);
                 FixMergedCellsColumn(columnFrom, columns, true);
 
-                var csec = new CellsStoreEnumerator<ExcelCoreValue>(_values, 0, columnFrom, 0, ExcelPackage.MaxColumns);
+                var csec = new CellsStoreEnumeratorOptimized(_values, 0, columnFrom, 0, ExcelPackage.MaxColumns);
                 foreach (var val in csec)    
                 {
                     var column = val._value;
@@ -3518,7 +3519,7 @@ namespace OfficeOpenXml
         {
             StringBuilder breaks = new StringBuilder();
             int count = 0;
-            var cse = new CellsStoreEnumerator<ExcelCoreValue>(_values, 0, 0, 0, ExcelPackage.MaxColumns);
+            var cse = new CellsStoreEnumeratorOptimized(_values, 0, 0, 0, ExcelPackage.MaxColumns);
             //foreach (ExcelColumn col in _columns)
             while(cse.Next())
             {
@@ -3539,7 +3540,7 @@ namespace OfficeOpenXml
         {
             StringBuilder breaks=new StringBuilder();
             int count = 0;
-            var cse = new CellsStoreEnumerator<ExcelCoreValue>(_values, 0, 0, ExcelPackage.MaxRows, 0);
+            var cse = new CellsStoreEnumeratorOptimized(_values, 0, 0, ExcelPackage.MaxRows, 0);
             //foreach(ExcelRow row in _rows)            
             while(cse.Next())
             {
@@ -3560,7 +3561,7 @@ namespace OfficeOpenXml
         /// </summary>
         private void UpdateColumnData(StreamWriter sw)
         {
-            var cse = new CellsStoreEnumerator<ExcelCoreValue>(_values, 0, 1, 0, ExcelPackage.MaxColumns);
+            var cse = new CellsStoreEnumeratorOptimized(_values, 0, 1, 0, ExcelPackage.MaxColumns);
             bool first = true;
             while(cse.Next())
             {
@@ -3634,7 +3635,7 @@ namespace OfficeOpenXml
             FixSharedFormulas(); //Fixes Issue #32
 
             columnStyles = new Dictionary<int, int>();
-            var cse = new CellsStoreEnumerator<ExcelCoreValue>(_values, 1, 0, ExcelPackage.MaxRows, ExcelPackage.MaxColumns);
+            var cse = new CellsStoreEnumeratorOptimized(_values, 1, 0, ExcelPackage.MaxRows, ExcelPackage.MaxColumns);
             while (cse.Next())
             {
                 if (cse.Column > 0)
@@ -4350,7 +4351,7 @@ namespace OfficeOpenXml
 
         internal void UpdateCellsWithDate1904Setting()
         {
-            var cse = new CellsStoreEnumerator<ExcelCoreValue>(_values);
+            var cse = new CellsStoreEnumeratorOptimized(_values);
             var offset = Workbook.Date1904 ? -ExcelWorkbook.date1904Offset : ExcelWorkbook.date1904Offset;
             while(cse.MoveNext())
             {
@@ -4513,10 +4514,10 @@ namespace OfficeOpenXml
         {
             _values.SetValueSpecial(row, col, _setValueInnerUpdateDelegate, value);
         }
-        private static CellStore<ExcelCoreValue>.SetValueDelegate _setValueInnerUpdateDelegate = SetValueInnerUpdate;
-        private static void SetValueInnerUpdate(List<ExcelCoreValue> list, int index, object value)
+        private static readonly CellStoreOptimized.SetValueDelegate _setValueInnerUpdateDelegate = SetValueInnerUpdate;
+        private static ExcelCoreValue? SetValueInnerUpdate(object value, ExcelCoreValue oldVal)
         {
-            list[index] = new ExcelCoreValue { _value = value, _styleId = list[index]._styleId };
+            return new ExcelCoreValue { _value = value, _styleId = oldVal._styleId };
         }
         /// <summary>
         /// Set accessor of sheet styleId
@@ -4526,11 +4527,11 @@ namespace OfficeOpenXml
         /// <param name="styleId">styleId</param>
         internal void SetStyleInner(int row, int col, int styleId)
         {
-            _values.SetValueSpecial(row, col, (CellStore<ExcelCoreValue>.SetValueDelegate)SetStyleInnerUpdate, styleId);
+            _values.SetValueSpecial(row, col, SetStyleInnerUpdate, styleId);
         }
-        void SetStyleInnerUpdate(List<ExcelCoreValue> list, int index, object styleId)
+        ExcelCoreValue? SetStyleInnerUpdate(object styleId, ExcelCoreValue oldVal)
         {
-            list[index] = new ExcelCoreValue { _value = list[index]._value, _styleId = (int)styleId };
+            return new ExcelCoreValue { _value = oldVal._value, _styleId = (int)styleId };
         }
 
         /// <summary>
@@ -4546,13 +4547,13 @@ namespace OfficeOpenXml
             var rowBound = values.GetUpperBound(0);
             var colBound = values.GetUpperBound(1);
             _values.SetRangeValueSpecial(fromRow, fromColumn, toRow, toColumn,
-                (List<ExcelCoreValue> list, int index, int row, int column, object value) => {
+                (int row, int column, object value, ExcelCoreValue oldVal) => {
                     object val = null;
                     if (rowBound >= row - fromRow && colBound >= column - fromColumn)
                     {
                         val = ((object[,])values)[row - fromRow, column - fromColumn];
                     }
-                    list[index] = new ExcelCoreValue { _value = val, _styleId = list[index]._styleId };
+                    return new ExcelCoreValue { _value = val, _styleId = oldVal._styleId };
                 },
                 values);
         }

@@ -57,6 +57,7 @@ using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using w = System.Windows;
 using OfficeOpenXml.Utils;
 using OfficeOpenXml.Compatibility;
+using OfficeOpenXml.NonGenericOptimize;
 
 namespace OfficeOpenXml
 {	
@@ -496,7 +497,7 @@ namespace OfficeOpenXml
                     column.StyleName = value;
                     column.StyleID = _styleID;
 
-                    var cols = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, 0, _fromCol + 1, 0, _toCol);
+                    var cols = new CellsStoreEnumeratorOptimized(_worksheet._values, 0, _fromCol + 1, 0, _toCol);
                     if (cols.Next())
                     {
                         col = _fromCol;
@@ -534,7 +535,7 @@ namespace OfficeOpenXml
 
                     if (_fromCol == 1 && _toCol == ExcelPackage.MaxColumns) //FullRow
                     {
-                        var rows = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, 1, 0, ExcelPackage.MaxRows, 0);
+                        var rows = new CellsStoreEnumeratorOptimized(_worksheet._values, 1, 0, ExcelPackage.MaxRows, 0);
                         rows.Next();
                         while(rows.Value._value != null)
                         {
@@ -567,7 +568,7 @@ namespace OfficeOpenXml
                 }
                 else //Only set name on created cells. (uncreated cells is set on full row or full column).
                 {
-                    var cells = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
+                    var cells = new CellsStoreEnumeratorOptimized(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
                     while (cells.Next())
                     {
                         _worksheet.SetStyleInner(cells.Row, cells.Column, _styleID);
@@ -953,9 +954,9 @@ namespace OfficeOpenXml
 
         private void SetMinWidth(double minimumWidth, int fromCol, int toCol)
         {
-            var iterator = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, 0, fromCol, 0, toCol);
+            var iterator = new CellsStoreEnumeratorOptimized(_worksheet._values, 0, fromCol, 0, toCol);
             var prevCol = fromCol;
-            foreach (ExcelCoreValue val in iterator)
+            foreach (var val in iterator)
             {
                 var col = (ExcelColumn)val._value;
                 col.Width = minimumWidth;
@@ -1879,7 +1880,7 @@ namespace OfficeOpenXml
                 rowArray.Add(dr.ItemArray);
             }
             _worksheet._values.SetRangeValueSpecial(_fromRow, _fromCol, _fromRow + rowArray.Count - 1, _fromCol + Table.Columns.Count - 1,
-                (List<ExcelCoreValue> list, int index, int rowIx, int columnIx, object value) =>
+                (int rowIx, int columnIx, object value, ExcelCoreValue oldVal) =>
                 {
                     rowIx -= _fromRow;
                     columnIx -= _fromCol;
@@ -1887,8 +1888,9 @@ namespace OfficeOpenXml
                     var val = ((List<object[]>)value)[rowIx][columnIx];
                     if (val != null && val != DBNull.Value && !string.IsNullOrEmpty(val.ToString()))
                     {
-                        list[index] = new ExcelCoreValue { _value = val, _styleId = list[index]._styleId };
+                        return new ExcelCoreValue { _value = val, _styleId = oldVal._styleId };
                     }
+                    return null;
                 }, rowArray);
 
             return _worksheet.Cells[_fromRow, _fromCol, _fromRow + rowArray.Count - 1, _fromCol + Table.Columns.Count - 1];
@@ -1915,21 +1917,23 @@ namespace OfficeOpenXml
             }
             if (rowArray.Count == 0) return null; //Issue #57
             _worksheet._values.SetRangeValueSpecial(_fromRow, _fromCol, _fromRow + rowArray.Count - 1, _fromCol + maxColumn - 1,
-                (List<ExcelCoreValue> list, int index, int rowIx, int columnIx, object value) =>
+                (int rowIx, int columnIx, object value, ExcelCoreValue oldVal) =>
                 {
                     rowIx -= _fromRow;
                     columnIx -= _fromCol;
 
                     var values = ((List<object[]>)value);
-                    if (values.Count <= rowIx) return;
+                    if (values.Count <= rowIx) return null;
                     var item = values[rowIx];
-                    if (item.Length <= columnIx) return;
+                    if (item.Length <= columnIx) return null;
 
                     var val = item[columnIx];
                     if (val != null && val != DBNull.Value && !string.IsNullOrEmpty(val.ToString()))
                     {
-                        list[index] = new ExcelCoreValue { _value = val, _styleId = list[index]._styleId };
+                        return new ExcelCoreValue { _value = val, _styleId = oldVal._styleId };
                     }
+
+                    return null;
                 }, rowArray);
 
             return _worksheet.Cells[_fromRow, _fromCol, _fromRow + rowArray.Count - 1, _fromCol + maxColumn - 1];
@@ -2236,14 +2240,14 @@ namespace OfficeOpenXml
             }
             // flush
             _worksheet._values.SetRangeValueSpecial(_fromRow, _fromCol, _fromRow + values.Length - 1, _fromCol + maxCol,
-                (List<ExcelCoreValue> list, int index, int rowIx, int columnIx, object value) =>
+                (int rowIx, int columnIx, object value, ExcelCoreValue oldVal) =>
                 {
                     rowIx -= _fromRow;
                     columnIx -= _fromCol;
                     var item = values[rowIx];
-                    if (item == null || item.Count <= columnIx) return;
+                    if (item == null || item.Count <= columnIx) return null;
 
-                    list[index] = new ExcelCoreValue { _value = item[columnIx], _styleId = list[index]._styleId };
+                    return new ExcelCoreValue { _value = item[columnIx], _styleId = oldVal._styleId };
                 }, values);
 
             return _worksheet.Cells[_fromRow, _fromCol, _fromRow + row, _fromCol + maxCol];
@@ -2476,7 +2480,7 @@ namespace OfficeOpenXml
             //ExcelComment comment=null;
 
             var excludeFormulas = excelRangeCopyOptionFlags.HasValue && (excelRangeCopyOptionFlags.Value & ExcelRangeCopyOptionFlags.ExcludeFormulas) == ExcelRangeCopyOptionFlags.ExcludeFormulas;
-            var cse = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
+            var cse = new CellsStoreEnumeratorOptimized(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
 
             var copiedValue = new List<CopiedCell>();
             while (cse.Next())
@@ -2547,7 +2551,7 @@ namespace OfficeOpenXml
             }
 
             //Copy styles with no cell value
-            var cses = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
+            var cses = new CellsStoreEnumeratorOptimized(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
             while (cses.Next())
             {
                 if (!_worksheet.ExistsValueInner(cses.Row, cses.Column))
@@ -2778,9 +2782,9 @@ namespace OfficeOpenXml
 			//_worksheet = null;            
 		}
 
-#endregion
-#region "Enumerator"
-        CellsStoreEnumerator<ExcelCoreValue> cellEnum;
+        #endregion
+        #region "Enumerator"
+        CellsStoreEnumeratorOptimized cellEnum;
 		public IEnumerator<ExcelRangeBase> GetEnumerator()
 		{
 			Reset();
@@ -2829,7 +2833,7 @@ namespace OfficeOpenXml
                 _enumAddressIx++;
                 if (_enumAddressIx < _addresses.Count)
                 {
-                    cellEnum = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, 
+                    cellEnum = new CellsStoreEnumeratorOptimized(_worksheet._values, 
                         _addresses[_enumAddressIx]._fromRow, 
                         _addresses[_enumAddressIx]._fromCol, 
                         _addresses[_enumAddressIx]._toRow, 
@@ -2847,7 +2851,7 @@ namespace OfficeOpenXml
 		public void Reset()
 		{
             _enumAddressIx = -1;
-            cellEnum = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
+            cellEnum = new CellsStoreEnumeratorOptimized(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
         }
 #endregion
         private struct SortItem<T>
@@ -2936,7 +2940,7 @@ namespace OfficeOpenXml
                     throw (new ArgumentException("Can not reference columns outside the boundries of the range. Note that column reference is zero-based within the range"));
                 }
             }
-            var e = new CellsStoreEnumerator<ExcelCoreValue>(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
+            var e = new CellsStoreEnumeratorOptimized(_worksheet._values, _fromRow, _fromCol, _toRow, _toCol);
             var l = new List<SortItem<ExcelCoreValue>>();
             SortItem<ExcelCoreValue> item = new SortItem<ExcelCoreValue>();
 
@@ -3037,10 +3041,10 @@ namespace OfficeOpenXml
             return l;
         }
 
-        private static void SortSetValue(List<ExcelCoreValue> list, int index, object value)
+        private static ExcelCoreValue? SortSetValue(object value, ExcelCoreValue oldVal)
         {
             var v = (ExcelCoreValue)value;
-            list[index] = new ExcelCoreValue { _value = v._value, _styleId = v._styleId };
+            return new ExcelCoreValue { _value = v._value, _styleId = v._styleId };
         }
     }
 }

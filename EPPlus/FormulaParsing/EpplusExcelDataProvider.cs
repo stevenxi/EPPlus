@@ -6,6 +6,7 @@ using OfficeOpenXml.FormulaParsing;
 using OfficeOpenXml.FormulaParsing.ExcelUtilities;
 using OfficeOpenXml.FormulaParsing.Excel.Functions;
 using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
+using OfficeOpenXml.NonGenericOptimize;
 using OfficeOpenXml.Utils;
 using OfficeOpenXml.Style.XmlAccess;
 
@@ -16,7 +17,7 @@ namespace OfficeOpenXml.FormulaParsing
         public class RangeInfo : IRangeInfo
         {
             internal ExcelWorksheet _ws;
-            CellsStoreEnumerator<ExcelCoreValue> _values = null;
+            CellsStoreEnumeratorOptimized _values = null;
             int _fromRow, _toRow, _fromCol, _toCol;
             int _cellCount = 0;
             ExcelAddressBase _address;
@@ -31,7 +32,7 @@ namespace OfficeOpenXml.FormulaParsing
                 _toCol = toCol;
                 _address = new ExcelAddressBase(_fromRow, _fromCol, _toRow, _toCol);
                 _address._ws = ws.Name;
-                _values = new CellsStoreEnumerator<ExcelCoreValue>(ws._values, _fromRow, _fromCol, _toRow, _toCol);
+                _values = new CellsStoreEnumeratorOptimized(ws._values, _fromRow, _fromCol, _toRow, _toCol);
                 _cell = new CellInfo(_ws, _values);
             }
 
@@ -44,7 +45,7 @@ namespace OfficeOpenXml.FormulaParsing
                 _toCol = address._toCol;
                 _address = address;
                 _address._ws = ws.Name;
-                _values = new CellsStoreEnumerator<ExcelCoreValue>(ws._values, _fromRow, _fromCol, _toRow, _toCol);
+                _values = new CellsStoreEnumeratorOptimized(ws._values, _fromRow, _fromCol, _toRow, _toCol);
                 _cell = new CellInfo(_ws, _values);
             }
 
@@ -177,8 +178,8 @@ namespace OfficeOpenXml.FormulaParsing
         public class CellInfo : ICellInfo
         {
             ExcelWorksheet _ws;
-            CellsStoreEnumerator<ExcelCoreValue> _values;
-            internal CellInfo(ExcelWorksheet ws, CellsStoreEnumerator<ExcelCoreValue> values)
+            CellsStoreEnumeratorOptimized _values;
+            internal CellInfo(ExcelWorksheet ws, CellsStoreEnumeratorOptimized values)
             {
                 _ws = ws;
                 _values = values;
@@ -398,7 +399,7 @@ namespace OfficeOpenXml.FormulaParsing
             var addr = new ExcelAddress(address);
             var wsName = string.IsNullOrEmpty(addr.WorkSheet) ? _currentWorksheet.Name : addr.WorkSheet;
             var ws = _package.Workbook.Worksheets[wsName];
-            return (IEnumerable<object>)(new CellsStoreEnumerator<ExcelCoreValue>(ws._values, addr._fromRow, addr._fromCol, addr._toRow, addr._toCol));
+            return (IEnumerable<object>)(new CellsStoreEnumeratorOptimized(ws._values, addr._fromRow, addr._fromCol, addr._toRow, addr._toCol));
         }
 
 

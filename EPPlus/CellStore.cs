@@ -35,8 +35,9 @@ using System.Text;
 using System.Collections;
 using OfficeOpenXml;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
+using OfficeOpenXml.NonGenericOptimize;
 
-    internal class IndexBase : IComparable<IndexBase>
+internal class IndexBase : IComparable<IndexBase>
     {        
         internal short Index;
         public int CompareTo(IndexBase other)
@@ -48,7 +49,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
     // to compress memory size, use struct
     internal struct IndexItem : IComparable<IndexItem>
     {
-        internal int IndexPointer
+        internal ComposePosition IndexPointer
         {
             get;
             set;
@@ -379,7 +380,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
                     for (int r = 0; r < _columnIndex[c]._pages[p].RowCount; r++)
                     {
                         row = _columnIndex[c]._pages[p].IndexOffset + _columnIndex[c]._pages[p].Rows[r].Index;
-                        ret.SetValue(row, col, _values[_columnIndex[c]._pages[p].Rows[r].IndexPointer]);
+                        ret.SetValue(row, col, _values[_columnIndex[c]._pages[p].Rows[r].IndexPointer.Index]);
                     }
                 }
             }
@@ -581,7 +582,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
                     var cellPos = Array.BinarySearch(pageItem.Rows, 0, pageItem.RowCount, _searchItem);
                     if (cellPos >= 0)
                     {
-                        return pageItem.Rows[cellPos].IndexPointer;
+                        return pageItem.Rows[cellPos].IndexPointer.Index;
                     }
                     else //Cell does not exist
                     {
@@ -663,7 +664,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
                     }
                     else
                     {
-                        _values[pageItem.Rows[cellPos].IndexPointer] = Value;
+                        _values[pageItem.Rows[cellPos].IndexPointer.Index] = Value;
                     }
                 }
                 else //Column does not exist
@@ -749,11 +750,11 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
                                 {
                                     cellPos = ~cellPos;
                                     AddCell(_columnIndex[col], pos, cellPos, ix, default(T));
-                                    Updater(_values, pageItem.Rows[cellPos].IndexPointer, rowIx, colIx, Value);
+                                    Updater(_values, pageItem.Rows[cellPos].IndexPointer.Index, rowIx, colIx, Value);
                                 }
                                 else
                                 {
-                                    Updater(_values, pageItem.Rows[cellPos].IndexPointer, rowIx, colIx, Value);
+                                    Updater(_values, pageItem.Rows[cellPos].IndexPointer.Index, rowIx, colIx, Value);
                                 }
                             }
                             else //Column does not exist
@@ -763,7 +764,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
                                 AddPage(_columnIndex[col], 0, page);
                                 short ix = (short)(rowIx - (page << pageBits));
                                 AddCell(_columnIndex[col], 0, 0, ix, default(T));
-                                Updater(_values, _columnIndex[col]._pages[0].Rows[0].IndexPointer, rowIx, colIx, Value);
+                                Updater(_values, _columnIndex[col]._pages[0].Rows[0].IndexPointer.Index, rowIx, colIx, Value);
                             }
                         }
                     }
@@ -819,11 +820,11 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
                     {
                         cellPos = ~cellPos;
                         AddCell(_columnIndex[col], pos, cellPos, ix, default(T));
-                        Updater(_values, pageItem.Rows[cellPos].IndexPointer, Value);
+                        Updater(_values, pageItem.Rows[cellPos].IndexPointer.Index, Value);
                     }
                     else
                     {
-                        Updater(_values, pageItem.Rows[cellPos].IndexPointer, Value);
+                        Updater(_values, pageItem.Rows[cellPos].IndexPointer.Index, Value);
                     }
                 }
                 else //Column does not exist
@@ -833,7 +834,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
                     AddPage(_columnIndex[col], 0, page);
                     short ix = (short)(Row - (page << pageBits));
                     AddCell(_columnIndex[col], 0, 0, ix, default(T));
-                    Updater(_values, _columnIndex[col]._pages[0].Rows[0].IndexPointer, Value);
+                    Updater(_values, _columnIndex[col]._pages[0].Rows[0].IndexPointer.Index, Value);
                 }
             }
         }
@@ -1444,7 +1445,8 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
             {
                 Array.Copy(pageItem.Rows, pos, pageItem.Rows, pos + 1, pageItem.RowCount - pos);
             }
-            pageItem.Rows[pos] = new IndexItem() { Index = ix,IndexPointer=_values.Count };
+
+            pageItem.Rows[pos] = new IndexItem() { Index = ix, IndexPointer = new ComposePosition { Index = _values.Count, Type = ComposePositionType.Generic } };
             _values.Add(value);
             pageItem.RowCount++;
         }
