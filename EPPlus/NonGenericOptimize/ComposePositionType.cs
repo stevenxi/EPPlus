@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace OfficeOpenXml.NonGenericOptimize
 {
-    enum ComposePositionType
+    enum ComposePositionType : byte
     {
         Generic = 0,
         Decimal = 1,
-        String = 2,
+        Double = 2,
     }
 }
