@@ -654,7 +654,7 @@ namespace OfficeOpenXml
         /// <returns>The cell address in the format A1</returns>
         public static string GetAddress(int Row, bool AbsoluteRow, int Column, bool AbsoluteCol)
         {
-            return ( AbsoluteCol ? "$" : "") + GetColumnLetter(Column) + ( AbsoluteRow ? "$" : "") + Row.ToString();
+            return string.Concat(( AbsoluteCol ? "$" : ""), GetColumnLetter(Column),  ( AbsoluteRow ? "$" : ""), Row);
         }
         /// <summary>
         /// Returns the AlphaNumeric representation that Excel expects for a Cell Address
@@ -671,11 +671,11 @@ namespace OfficeOpenXml
             }
             if (Absolute)
             {
-                return ("$" + GetColumnLetter(Column) + "$" + Row.ToString());
+                return string.Concat("$", GetColumnLetter(Column) , "$", Row);
             }
             else
             {
-                return (GetColumnLetter(Column) + Row.ToString());
+                return string.Concat(GetColumnLetter(Column), Row);
             }
         }
         /// <summary>
@@ -710,16 +710,17 @@ namespace OfficeOpenXml
                 if (FromRow == 1 && ToRow == ExcelPackage.MaxRows)
                 {
                     var absChar = Absolute ? "$" : "";
-                    return absChar + GetColumnLetter(FromColumn) + ":" + absChar + GetColumnLetter(ToColumn);
+                    return string.Concat(absChar, GetColumnLetter(FromColumn),  ":" , absChar , GetColumnLetter(ToColumn));
                 }
-                else if(FromColumn==1 && ToColumn==ExcelPackage.MaxColumns)
+
+                if(FromColumn==1 && ToColumn==ExcelPackage.MaxColumns)
                 {
                     var absChar = Absolute ? "$" : "";
-                    return absChar + FromRow.ToString() + ":" + absChar + ToRow.ToString();
+                    return string.Concat(absChar, FromRow, ":", absChar,  ToRow);
                 }
                 else
                 {
-                    return GetAddress(FromRow, FromColumn, Absolute) + ":" + GetAddress(ToRow, ToColumn, Absolute);
+                    return string.Concat(GetAddress(FromRow, FromColumn, Absolute), ":", GetAddress(ToRow, ToColumn, Absolute));
                 }
             }
         }
@@ -738,24 +739,15 @@ namespace OfficeOpenXml
         public static string GetAddress(int FromRow, int FromColumn, int ToRow, int ToColumn, bool FixedFromRow, bool FixedFromColumn, bool FixedToRow, bool  FixedToColumn)
         {
             if (FromRow == ToRow && FromColumn == ToColumn)
-            {
                 return GetAddress(FromRow, FixedFromRow, FromColumn, FixedFromColumn);
-            }
-            else
-            {
-                if (FromRow == 1 && ToRow == ExcelPackage.MaxRows)
-                {
-                    return GetColumnLetter(FromColumn, FixedFromColumn) + ":" + GetColumnLetter(ToColumn, FixedToColumn);
-                }
-                else if (FromColumn == 1 && ToColumn == ExcelPackage.MaxColumns)
-                {                    
-                    return (FixedFromRow ? "$":"") + FromRow.ToString() + ":" + (FixedToRow ? "$":"") + ToRow.ToString();
-                }
-                else
-                {
-                    return GetAddress(FromRow, FixedFromRow, FromColumn, FixedFromColumn) + ":" + GetAddress(ToRow, FixedToRow, ToColumn, FixedToColumn);
-                }
-            }
+
+            if (FromRow == 1 && ToRow == ExcelPackage.MaxRows)
+                return GetColumnLetter(FromColumn, FixedFromColumn) + ":" + GetColumnLetter(ToColumn, FixedToColumn);
+                
+            if (FromColumn == 1 && ToColumn == ExcelPackage.MaxColumns)
+                return string.Concat((FixedFromRow ? "$" : ""), FromRow, ":", (FixedToRow ? "$" : ""), ToRow);
+
+            return string.Concat(GetAddress(FromRow, FixedFromRow, FromColumn, FixedFromColumn), ":" , GetAddress(ToRow, FixedToRow, ToColumn, FixedToColumn));
         }
         /// <summary>
         /// Get the full address including the worksheet name
@@ -776,10 +768,10 @@ namespace OfficeOpenXml
                        string[] cells = address.Split(':');
                        if (cells.Length > 0)
                        {
-                           address = string.Format("'{0}'!{1}", worksheetName, cells[0]);
+                           address = $"'{worksheetName}'!{cells[0]}";
                            if (cells.Length > 1)
                            {
-                               address += string.Format(":{0}", cells[1]);
+                               address += $":{cells[1]}";
                            }
                        }
                    }
@@ -788,7 +780,7 @@ namespace OfficeOpenXml
                        var a = new ExcelAddressBase(address);
                        if ((a._fromRow == 1 && a._toRow == ExcelPackage.MaxRows) || (a._fromCol == 1 && a._toCol == ExcelPackage.MaxColumns))
                        {
-                           address = string.Format("'{0}'!{1}{2}:{3}{4}", worksheetName, ExcelAddress.GetColumnLetter(a._fromCol), a._fromRow, ExcelAddress.GetColumnLetter(a._toCol), a._toRow);
+                           address = $"'{worksheetName}'!{ExcelAddress.GetColumnLetter(a._fromCol)}{a._fromRow}:{ExcelAddress.GetColumnLetter(a._toCol)}{a._toRow}";
                        }
                        else
                        {

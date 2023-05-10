@@ -386,20 +386,18 @@ namespace OfficeOpenXml
 
         private string GetAddress()
         {
-            var adr = "";
+            var sb = new StringBuilder();
+            
             if (!string.IsNullOrEmpty(_wb))
-            {
-                adr = "[" + _wb + "]";
-            }
+                sb.Append($"[{_wb}]");
 
             if (!string.IsNullOrEmpty(_ws))
-            {
-                adr += string.Format("'{0}'!", _ws);
-            }
+                sb.Append($"'{_ws}'!");
+
             if (IsName)
-              adr += GetAddress(_fromRow, _fromCol, _toRow, _toCol);
+                sb.Append(GetAddress(_fromRow, _fromCol, _toRow, _toCol));
             else
-              adr += GetAddress(_fromRow, _fromCol, _toRow, _toCol, _fromRowFixed, _fromColFixed, _toRowFixed, _toColFixed);
+                sb.Append(GetAddress(_fromRow, _fromCol, _toRow, _toCol, _fromRowFixed, _fromColFixed, _toRowFixed, _toColFixed));
             return adr;
         }
         #endregion
