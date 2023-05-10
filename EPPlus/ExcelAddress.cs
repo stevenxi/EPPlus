@@ -398,7 +398,8 @@ namespace OfficeOpenXml
                 sb.Append(GetAddress(_fromRow, _fromCol, _toRow, _toCol));
             else
                 sb.Append(GetAddress(_fromRow, _fromCol, _toRow, _toCol, _fromRowFixed, _fromColFixed, _toRowFixed, _toColFixed));
-            return adr;
+
+            return sb.ToString();
         }
         #endregion
         protected ExcelCellAddress _start = null;
