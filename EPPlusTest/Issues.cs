@@ -16,7 +16,9 @@ using OfficeOpenXml.Drawing.Chart;
 using System.Text;
 using System.Dynamic;
 using System.Globalization;
+using System.Xml;
 using OfficeOpenXml.Drawing;
+using OfficeOpenXml.Utils;
 
 namespace EPPlusTest
 {
@@ -1954,5 +1956,16 @@ namespace EPPlusTest
                 epIN.SaveAs(new FileInfo(@"C:\temp\bug\pivotbug107-SameWB.xlsx"));
            }
         }
+
+        [TestMethod, Ignore]
+        public void InvalidProperty()
+        {
+            using (ExcelPackage epOUT = new ExcelPackage(new FileInfo($@"G:\Temp\2024-03-14\outputs\{DateTime.UtcNow:yyyyMMdd-HHmmss}.xlsx"), new FileInfo(@"Workbooks\special-property-template.xlsx")))
+            {
+                epOUT.Workbook.Properties.Author = "abcdefg";
+                epOUT.Save();
+            }
+        }
+
     }
 }
