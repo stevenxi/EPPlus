@@ -736,15 +736,22 @@ namespace OfficeOpenXml
         }
 		
 #region SavePart
-		/// <summary>
-		/// Saves the XmlDocument into the package at the specified Uri.
-		/// </summary>
-		/// <param name="uri">The Uri of the component</param>
-		/// <param name="xmlDoc">The XmlDocument to save</param>
-		internal void SavePart(Uri uri, XmlDocument xmlDoc)
+
+        private readonly XmlWriterSettings _xmlWriterSettings = new XmlWriterSettings {
+            Indent = false,
+            CloseOutput = false
+        };
+
+        /// <summary>
+        /// Saves the XmlDocument into the package at the specified Uri.
+        /// </summary>
+        /// <param name="uri">The Uri of the component</param>
+        /// <param name="xmlDoc">The XmlDocument to save</param>
+        internal void SavePart(Uri uri, XmlDocument xmlDoc)
 		{
             Packaging.ZipPackagePart part = _package.GetPart(uri);
-			xmlDoc.Save(part.GetStream(FileMode.Create, FileAccess.Write));
+            using (var wr = XmlWriter.Create(part.GetStream(FileMode.Create, FileAccess.Write), _xmlWriterSettings))
+                xmlDoc.Save(wr);
 		}
         /// <summary>
 		/// Saves the XmlDocument into the package at the specified Uri.
