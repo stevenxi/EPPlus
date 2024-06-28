@@ -999,6 +999,9 @@ namespace OfficeOpenXml
 				}
 			}
 
+            if (nf == null)
+                return v?.ToString();
+
 			string format, textFormat;
 			if (forWidthCalc)
 			{
