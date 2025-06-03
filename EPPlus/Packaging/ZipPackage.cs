@@ -207,7 +207,8 @@ namespace OfficeOpenXml.Packaging
         {
             if (PartExists(partUri))
             {
-                return Parts.Single(x => x.Key.Equals(GetUriKey(partUri.OriginalString),StringComparison.OrdinalIgnoreCase)).Value;
+                //return Parts.Single(x => x.Key.Equals(GetUriKey(partUri.OriginalString),StringComparison.OrdinalIgnoreCase)).Value;
+                return Parts[GetUriKey(partUri.OriginalString)];
             }
             else
             {
@@ -224,10 +225,13 @@ namespace OfficeOpenXml.Packaging
             }
             return ret;
         }
+        internal IEnumerable<string> PartNames => Parts.Keys;
+
         internal bool PartExists(Uri partUri)
         {
             var uriKey = GetUriKey(partUri.OriginalString.ToLowerInvariant());
-            return Parts.Keys.Any(x => x.Equals(uriKey, StringComparison.OrdinalIgnoreCase));
+            return Parts.ContainsKey(uriKey);
+                //Parts.Keys.Any(x => x.Equals(uriKey, StringComparison.OrdinalIgnoreCase));
         }
 #endregion
 

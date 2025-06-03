@@ -36,6 +36,7 @@ using System.Xml;
 using System.IO;
 using System.Globalization;
 using OfficeOpenXml.Utils;
+using System.Linq;
 
 namespace OfficeOpenXml
 {
@@ -94,35 +95,49 @@ namespace OfficeOpenXml
                         ExcelPackage.schemaDcmiType,
                         ExcelPackage.schemaXsi);
 
-                    _xmlPropertiesCore = GetXmlDocument(xml, _uriPropertiesCore, @"application/vnd.openxmlformats-package.core-properties+xml", @"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties");
+                    _xmlPropertiesCore = GetXmlDocument(xml, _uriPropertiesCore, @"application/vnd.openxmlformats-package.core-properties+xml", @"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties",
+                        () =>
+                        {
+                            //https://www.reddit.com/r/sysadmin/comments/p86xfr/excel_xlsx_file_format_or_metadata_debugging_tools/
+                            //Sample file: https://gitlab.com/steven4ever/gioveporteradaptors/-/issues/1
+                            var coreXml = _package.Package.PartNames.FirstOrDefault(x => x.EndsWith(".psmdcp") && x.Contains("core-properties"));
+                            if (coreXml == null)
+                                return null;
+                            return new Uri(coreXml, UriKind.Relative);
+                        });
                 }
                 return (_xmlPropertiesCore);
             }
         }
 
-        private XmlDocument GetXmlDocument(string startXml, Uri uri, string contentType, string relationship)
+        private XmlDocument GetXmlDocument(string startXml, Uri uri, string contentType, string relationship, Func<Uri> getFailbackUri = null)
         {
-            XmlDocument xmlDoc;
             if (_package.Package.PartExists(uri))
-                xmlDoc = _package.GetXmlFromUri(uri);
-            else
+                return _package.GetXmlFromUri(uri);
+
+            if (getFailbackUri != null)
             {
-                xmlDoc = new XmlDocument();
-                xmlDoc.LoadXml(startXml);
+                var newUri = getFailbackUri();
 
-                // Create a the part and add to the package
-                Packaging.ZipPackagePart part = _package.Package.CreatePart(uri, contentType);
-
-                // Save it to the package
-                StreamWriter stream = new StreamWriter(part.GetStream(FileMode.Create, FileAccess.Write));
-                xmlDoc.Save(stream);
-                //stream.Close();
-                _package.Package.Flush();
-
-                // create the relationship between the workbook and the new shared strings part
-                _package.Package.CreateRelationship(UriHelper.GetRelativeUri(new Uri("/xl", UriKind.Relative), uri), Packaging.TargetMode.Internal, relationship);
-                _package.Package.Flush();
+                if (newUri != null && _package.Package.PartExists(newUri))
+                    return _package.GetXmlFromUri(newUri);
             }
+
+            var xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(startXml);
+
+            // Create a the part and add to the package
+            Packaging.ZipPackagePart part = _package.Package.CreatePart(uri, contentType);
+
+            // Save it to the package
+            StreamWriter stream = new StreamWriter(part.GetStream(FileMode.Create, FileAccess.Write));
+            xmlDoc.Save(stream);
+            //stream.Close();
+            _package.Package.Flush();
+
+            // create the relationship between the workbook and the new shared strings part
+            _package.Package.CreateRelationship(UriHelper.GetRelativeUri(new Uri("/xl", UriKind.Relative), uri), Packaging.TargetMode.Internal, relationship);
+            _package.Package.Flush();
             return xmlDoc;
         }
         #endregion
